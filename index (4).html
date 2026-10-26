@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CertFind – Find courses with certificates</title>
+<meta name="description" content="Search free and paid online courses with certificates across Python, AI/ML, web development and more.">
+<style>
+:root{--bg:#050a1c;--panel:#10213b;--line:#1f3558;--text:#e8eefb;--muted:#9fb1d0;--blue:#3d8bff;--blue2:#7db3ff;--free:#35d49a;--paid:#ffb454}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+header{padding:48px 0 24px}
+h1{font-size:clamp(2rem,5vw,3.2rem);margin:0 0 8px;letter-spacing:-.02em}
+h1 span{color:var(--blue)}
+header p{color:var(--muted);max-width:56ch;margin:0 0 22px}
+.search{width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:1rem}
+.search:focus,button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--blue2);outline-offset:2px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 6px}
+select,.chip{padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:.92rem;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.count{color:var(--muted);font-size:.9rem;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;padding-bottom:40px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px}
+button.btn{border:0;font:inherit;cursor:pointer}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:0;width:min(640px,94vw);max-height:90vh}
+dialog::backdrop{background:rgba(3,10,22,.75)}
+.m{padding:22px;display:flex;flex-direction:column;gap:14px}
+.m h3{margin:0 0 2px;font-size:1.3rem}
+.m h4{margin:0 0 6px;font-size:1rem;color:var(--blue2)}
+.m ul{margin:0;padding-left:20px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0}
+.facts div{background:#0c1b32;border-radius:8px;padding:10px}
+.facts dt{font-size:.8rem;color:var(--muted)}
+.facts dd{margin:2px 0 0;font-weight:600}
+.close{align-self:flex-end;background:transparent;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer}
+.warn{font-size:.85rem;color:var(--paid);margin:0}
+.head{display:flex;gap:12px;align-items:center}
+.logo{width:54px;height:54px;border-radius:11px;background:#fff;padding:7px;object-fit:contain;flex:none}
+.logo.ph{display:grid;place-items:center;background:var(--blue);color:#fff;font-weight:700;padding:0}
+.card h2{font-size:1.08rem;margin:0}
+.prov{color:var(--muted);font-size:.9rem;margin:0}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:.78rem;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--blue2)}
+.tag.free{color:var(--free);border-color:var(--free)}
+.tag.paid{color:var(--paid);border-color:var(--paid)}
+.note{font-size:.88rem;color:var(--muted);background:#0c1b32;border-left:3px solid var(--blue);padding:8px 10px;border-radius:4px;margin:0}
+.actions{display:flex;gap:8px;margin-top:auto}
+.btn{flex:1;text-align:center;padding:10px;border-radius:8px;background:var(--blue);color:#fff;text-decoration:none;font-weight:600}
+.fav{padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer;font-size:1rem}
+.fav[aria-pressed=true]{color:#ff6b8b;border-color:#ff6b8b}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0}
+/* ===== 3D THEME: change colours in :root, speeds in the animation lines ===== */
+header{position:relative}
+.scene{--s:130px;position:absolute;right:6px;top:34px;width:var(--s);height:var(--s);perspective:700px}
+.cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 16s linear infinite}
+.cube i{position:absolute;inset:0;display:grid;place-items:center;font:700 1.6rem/1 system-ui,sans-serif;font-style:normal;color:#fff;background:rgba(61,139,255,.2);border:1px solid var(--blue);box-shadow:inset 0 0 22px rgba(61,139,255,.45)}
+.cube .f1{transform:translateZ(calc(var(--s)/2))}
+.cube .f2{transform:rotateY(90deg) translateZ(calc(var(--s)/2))}
+.cube .f3{transform:rotateY(180deg) translateZ(calc(var(--s)/2))}
+.cube .f4{transform:rotateY(-90deg) translateZ(calc(var(--s)/2))}
+.cube .f5{transform:rotateX(90deg) translateZ(calc(var(--s)/2))}
+.cube .f6{transform:rotateX(-90deg) translateZ(calc(var(--s)/2))}
+@keyframes spin{from{transform:rotateX(-22deg) rotateY(0)}to{transform:rotateX(-22deg) rotateY(360deg)}}
+.floor{position:fixed;left:-50%;right:-50%;bottom:0;height:55vh;z-index:-1;pointer-events:none;opacity:.35;background-image:linear-gradient(var(--blue) 1px,transparent 1px),linear-gradient(90deg,var(--blue) 1px,transparent 1px);background-size:60px 60px;transform:perspective(500px) rotateX(62deg);transform-origin:bottom;-webkit-mask-image:linear-gradient(to top,#000,transparent);mask-image:linear-gradient(to top,#000,transparent);animation:floor 6s linear infinite}
+@keyframes floor{to{background-position:0 60px}}
+.card{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .15s ease-out,box-shadow .2s,border-color .2s}
+.card:hover{box-shadow:0 16px 40px rgba(61,139,255,.28);border-color:var(--blue)}
+@media(max-width:700px){.scene{--s:90px;position:relative;right:auto;top:auto;margin:0 auto 18px}.cube i{font-size:1.1rem}}
+@media(prefers-reduced-motion:reduce){.cube,.floor{animation:none}.card{transition:none}}
+.providers{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.pv{display:flex;align-items:center;gap:8px;padding:5px 13px 5px 5px;border:1px solid var(--line);border-radius:99px;background:rgba(16,33,59,.75);color:var(--text);font-size:.85rem;cursor:pointer}
+.pv:hover,.pv:focus-visible{border-color:var(--blue)}
+.pv .logo{width:28px;height:28px;padding:4px;border-radius:50%}
+/* ===== PREMIUM BACKGROUND: floating certificates, badges, particles ===== */
+.floor{opacity:.18}
+.bg,.hero-bg{position:fixed;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+.hero-bg{position:absolute;inset:0 0 auto 0;height:600px}
+.bg{background:radial-gradient(60% 45% at 12% 0%,rgba(36,71,245,.30),transparent 70%),radial-gradient(45% 40% at 92% 18%,rgba(34,211,238,.13),transparent 70%)}
+.bg::before,.bg::after{content:"";position:absolute;width:60vmax;height:60vmax;border-radius:50%}
+.bg::before{left:-20vmax;bottom:-25vmax;background:radial-gradient(closest-side,rgba(36,71,245,.2),transparent);animation:glow 14s ease-in-out infinite alternate}
+.bg::after{right:-22vmax;top:30vh;background:radial-gradient(closest-side,rgba(34,211,238,.1),transparent);animation:glow 18s ease-in-out -6s infinite alternate}
+.bg svg,.hero-bg svg{fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+symbol *{vector-effect:non-scaling-stroke}
+.c-blue{color:#4f74ff}.c-cyan{color:#35d6f5}.c-gold{color:#e8c872}.c-white{color:#e8eefb}
+.bg .it,.bg .pt{position:absolute;left:var(--x);top:var(--ty);opacity:var(--op)}
+.bg .it{width:var(--size)}
+.bg .it svg{display:block;width:100%;height:auto}
+.bg .near svg{filter:drop-shadow(0 0 8px currentColor)}
+.bg .pt{width:var(--s);height:var(--s);border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.hero-bg .h{position:absolute;transform:perspective(700px) rotateY(-8deg) rotateZ(var(--r))}
+.h1{left:-2%;top:90px;width:min(250px,34vw);--r:-8deg;opacity:.3}
+.h2{right:3%;top:250px;width:min(190px,28vw);--r:6deg;opacity:.28}
+.h3{left:46%;top:36px;width:84px;--r:10deg;opacity:.24}
+.h4{right:24%;top:340px;width:110px;--r:-6deg;opacity:.24}
+@keyframes glow{from{transform:translate3d(0,0,0) scale(1);opacity:.7}to{transform:translate3d(3vw,-4vh,0) scale(1.12);opacity:1}}
+@keyframes rise{0%{transform:translate3d(0,110vh,0);opacity:0}12%{opacity:var(--op)}88%{opacity:var(--op)}100%{transform:translate3d(var(--dx),-30vh,0);opacity:0}}
+@keyframes sway{from{transform:perspective(600px) rotateX(var(--tx)) rotateY(-32deg)}to{transform:perspective(600px) rotateX(var(--tx)) rotateY(32deg)}}
+@keyframes turn{from{transform:perspective(600px) rotateX(var(--tx)) rotateY(0)}to{transform:perspective(600px) rotateX(var(--tx)) rotateY(360deg)}}
+@keyframes bob{from{transform:perspective(700px) rotateY(-16deg) rotateZ(var(--r)) translateY(0)}to{transform:perspective(700px) rotateY(14deg) rotateZ(var(--r)) translateY(-18px)}}
+@media(prefers-reduced-motion:no-preference){
+  .bg .it,.bg .pt{top:0;opacity:0;animation:rise var(--dur) linear var(--delay) infinite;will-change:transform,opacity}
+  .bg .it svg.sway{animation:sway var(--td) ease-in-out infinite alternate}
+  .bg .it svg.spin{animation:turn var(--td) linear infinite}
+  .hero-bg .h{animation:bob 11s ease-in-out infinite alternate}
+  .h2{animation-delay:-4s!important}.h3{animation-delay:-7s!important}.h4{animation-delay:-2s!important}
+}
+@media(prefers-reduced-motion:reduce){.bg::before,.bg::after{animation:none}}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;padding:22px 0 40px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="cert" viewBox="0 0 100 72"><rect x="1" y="1" width="98" height="70" rx="4" fill="currentColor" fill-opacity=".06"/><rect x="6" y="6" width="88" height="60" rx="2" opacity=".5"/><path d="M20 22h60M30 32h40M24 42h28"/><circle cx="76" cy="48" r="8"/><path d="M71 55l-3 11 8-4 8 4-3-11"/></symbol>
+  <symbol id="cap" viewBox="0 0 100 100"><path d="M50 24L96 44 50 64 4 44z"/><path d="M24 54v18c0 6 52 6 52 0V54"/><path d="M92 46v22"/></symbol>
+  <symbol id="rib" viewBox="0 0 100 100"><circle cx="50" cy="36" r="22"/><circle cx="50" cy="36" r="14"/><path d="M38 55l-8 36 20-10 20 10-8-36"/></symbol>
+  <symbol id="star" viewBox="0 0 100 100"><path d="M50 8l12 26 28 3-21 19 6 28-25-14-25 14 6-28L10 37l28-3z"/></symbol>
+  <symbol id="ok" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/><circle cx="50" cy="50" r="33" opacity=".5"/><path d="M32 51l13 13 24-27"/></symbol>
+</defs></svg>
+<div class="floor" aria-hidden="true"></div>
+<div class="bg" id="bg" aria-hidden="true"></div>
+<div class="hero-bg" aria-hidden="true">
+  <svg class="h h1 c-blue" viewBox="0 0 100 72"><use href="#cert"/></svg>
+  <svg class="h h2 c-cyan" viewBox="0 0 100 72"><use href="#cert"/></svg>
+  <svg class="h h3 c-gold" viewBox="0 0 100 100"><use href="#rib"/></svg>
+  <svg class="h h4 c-blue" viewBox="0 0 100 100"><use href="#cap"/></svg>
+</div>
+<div class="wrap">
+<header>
+  <h1>Cert<span>Find</span></h1>
+  <p>Courses with certificates from many providers, in one place. Check each provider's page for the latest price and certificate rules.</p>
+  <input id="q" class="search" type="search" placeholder="Search by course, provider or subject" aria-label="Search courses">
+  <div class="filters">
+    <select id="subject" aria-label="Subject"></select>
+    <select id="level" aria-label="Level">
+      <option value="">Any level</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+    </select>
+    <button class="chip" data-price="" aria-pressed="true">All</button>
+    <button class="chip" data-price="Free" aria-pressed="false">Free</button>
+    <button class="chip" data-price="Paid" aria-pressed="false">Paid</button>
+    <button class="chip" id="favOnly" aria-pressed="false">♥ Favourites</button>
+  </div>
+  <div class="count" id="count" aria-live="polite"></div>
+</header>
+<main class="grid" id="grid"></main>
+<footer>
+  CertFind is an independent directory. We are not affiliated with the providers listed. Prices and certificate terms change, so always confirm on the official page.
+</footer>
+</div>
+
+<dialog id="modal" aria-label="Course details"><div class="m"><button class="close" id="closeBtn">Close</button><div id="modalBody" class="m" style="padding:0"></div></div></dialog>
+
+<script>
+// ===== EDIT THIS LIST to add or change courses =====
+// price: "Free" = course is free to take. "Paid" = course costs money.
+// cert: what we know about the certificate. Set verified:true only after you check the provider's page.
+const COURSES = [
+ {t:"Scientific Computing with Python",p:"freeCodeCamp",s:"Python",l:"Intermediate",price:"Free",cert:"Free certification on completing the projects.",verified:false,url:"https://www.freecodecamp.org/learn/scientific-computing-with-python/"},
+ {t:"CS50's Introduction to Programming with Python",p:"Harvard (CS50)",s:"Python",l:"Beginner",price:"Free",cert:"Free to learn on Harvard's own site. A free certificate is reported there; a verified certificate on edX costs about $219.",verified:false,checked:"26 Oct 2026, web sources",url:"https://cs50.harvard.edu/python/"},
+ {t:"Python for Everybody",p:"Coursera",s:"Python",l:"Beginner",price:"Paid",cert:"Free to learn. The certificate needs a Coursera subscription (reported around $45 to $49 a month) or financial aid.",verified:false,checked:"26 Oct 2026, web sources",url:"https://www.coursera.org/specializations/python"},
+ {t:"Python Certification",p:"freeCodeCamp",s:"Python",l:"Beginner",price:"Free",cert:"Free. Reported to include a final exam, then a verified certificate you can share.",verified:false,checked:"26 Oct 2026, web sources",url:"https://www.freecodecamp.org/learn/python-v9/"},
+ {t:"PCEP – Certified Entry-Level Python Programmer",p:"Python Institute",s:"Python",l:"Beginner",price:"Paid",cert:"The prep course (Python Essentials 1) is free. The PCEP exam costs about $59 and earns the certification.",verified:false,checked:"26 Oct 2026, web sources",url:"https://pythoninstitute.org/pcep"},
+ {t:"100 Days of Code: The Complete Python Pro Bootcamp",p:"Udemy",s:"Python",l:"Beginner",price:"Paid",cert:"Completion certificate included with purchase.",verified:false,url:"https://www.udemy.com/course/100-days-of-code/"},
+ {t:"Python Courses",p:"Kaggle Learn",s:"Python",l:"Beginner",price:"Free",cert:"Free certificate on completion. Check current terms.",verified:false,url:"https://www.kaggle.com/learn/python"},
+ {t:"Machine Learning Courses",p:"Kaggle Learn",s:"AI/ML",l:"Intermediate",price:"Free",cert:"Free certificate on completion. Check current terms.",verified:false,url:"https://www.kaggle.com/learn"},
+ {t:"Machine Learning Specialization",p:"Coursera",s:"AI/ML",l:"Beginner",price:"Paid",cert:"Certificate requires payment or financial aid.",verified:false,url:"https://www.coursera.org/"},
+ {t:"AI & ML Free Courses",p:"Great Learning Academy",s:"AI/ML",l:"Beginner",price:"Free",cert:"Free course certificates offered. Check each course.",verified:false,url:"https://www.mygreatlearning.com/academy"},
+ {t:"Responsive Web Design",p:"freeCodeCamp",s:"Web Development",l:"Beginner",price:"Free",cert:"Free certification after the required projects.",verified:false,url:"https://www.freecodecamp.org/learn"},
+ {t:"The Web Developer Bootcamp",p:"Udemy",s:"Web Development",l:"Beginner",price:"Paid",cert:"Completion certificate included with purchase.",verified:false,url:"https://www.udemy.com/topic/web-development/"},
+ {t:"Java Programming Courses",p:"Great Learning Academy",s:"Java",l:"Beginner",price:"Free",cert:"Free course certificates offered. Check each course.",verified:false,url:"https://www.mygreatlearning.com/academy"},
+ {t:"C Programming Courses",p:"NPTEL",s:"C",l:"Beginner",price:"Free",cert:"Free to learn. Proctored exam and certificate have a fee.",verified:false,url:"https://nptel.ac.in/"},
+ {t:"Data Science Courses",p:"edX",s:"Data Science",l:"Intermediate",price:"Paid",cert:"Free to audit. Verified certificate has a fee.",verified:false,url:"https://www.edx.org/"},
+ {t:"Cybersecurity Courses",p:"Cisco Networking Academy",s:"Cybersecurity",l:"Beginner",price:"Free",cert:"Free courses with completion badges. Check certificate terms.",verified:false,url:"https://www.netacad.com/"}
+,
+ {t:"Infosys Springboard Courses",p:"Infosys Springboard",s:"Python",l:"Beginner",price:"Free",cert:"Free courses with completion certificates. Check each course.",verified:false,url:"https://infyspringboard.onwingspan.com/"}
+];
+
+// Details shown in the popup. Keys must match the course title "t" exactly.
+// time = how long it takes, learn = what you will learn, need = what you should know first.
+// Times are rough estimates: confirm on the provider's page.
+const DETAILS={
+ "Scientific Computing with Python":{time:"About 300 hours, self-paced",need:"None, but basic programming helps",learn:["Python fundamentals and data structures","Object-oriented programming","Build 5 projects to earn the certificate"]},
+ "CS50's Introduction to Programming with Python":{time:"10 weeks, about 3 to 9 hours a week",need:"None",learn:["Functions, variables and conditionals","Loops, exceptions and libraries","Unit tests, file I/O, regular expressions and object-oriented programming"]},
+ "Python for Everybody":{time:"About 8 months for the full specialization (reported)",need:"None",learn:["Python basics and data structures","Using web data and APIs","Working with databases and visualizing data"]},
+ "Python Certification":{time:"Self-paced. Check the course page for hours",need:"None",learn:["Python from zero, with coding exercises in the browser","Hands-on projects","A final exam for the certification"]},
+ "PCEP – Certified Entry-Level Python Programmer":{time:"Exam is 30 questions in about 40 to 45 minutes. Study time varies",need:"None",learn:["Data types, containers, functions, conditions and loops","Python syntax and the runtime environment","Exceptions and the standard library basics"]},
+ "100 Days of Code: The Complete Python Pro Bootcamp":{time:"60+ hours of video (100 days, about 1 hour a day)",need:"None",learn:["Python 3 from the basics, building 100 projects","Scripting, automation and game development","GUI desktop apps and code challenges"]},
+ "Python Courses":{time:"A few hours per short course",need:"None",learn:["Python syntax and basics","Working with data in Python","Hands-on coding exercises"]},
+ "Machine Learning Courses":{time:"A few hours per short course",need:"Basic Python",learn:["Intro and intermediate machine learning","Model validation and overfitting","Hands-on practice on real datasets"]},
+ "Machine Learning Specialization":{time:"About 2 months at 10 hours a week",need:"Basic Python and maths",learn:["Supervised learning (regression, classification)","Neural networks and decision trees","Unsupervised learning and recommender systems"]},
+ "AI & ML Free Courses":{time:"Varies by course. Check each course page",need:"None for beginner courses",learn:["Introductory AI and ML concepts","Common algorithms","Short practice exercises"]},
+ "Responsive Web Design":{time:"About 300 hours, self-paced",need:"None",learn:["HTML and CSS fundamentals","Flexbox, grid and responsive layouts","Build 5 projects to earn the certificate"]},
+ "The Web Developer Bootcamp":{time:"Varies by course. Check the video hours listed",need:"None",learn:["HTML, CSS and JavaScript","Backend with Node.js","Build full websites"]},
+ "Java Programming Courses":{time:"Varies by course. Check each course page",need:"None for beginner courses",learn:["Java syntax and basics","Object-oriented programming","Practice problems"]},
+ "C Programming Courses":{time:"Usually about 8 to 12 weeks per course",need:"None",learn:["C syntax, loops and functions","Arrays, pointers and structures","Assignments and an optional exam"]},
+ "Data Science Courses":{time:"Varies. Check each course page",need:"Basic maths and Python help",learn:["Data analysis and visualization","Statistics for data science","Intro to machine learning"]},
+ "Cybersecurity Courses":{time:"Varies. Check each course page",need:"None for beginner courses",learn:["Security basics and threats","Networking fundamentals","Protecting systems and data"]},
+ "Infosys Springboard Courses":{time:"Varies by course. Check each course page",need:"None for beginner courses",learn:["Programming and IT fundamentals","Skill courses with practice","Completion certificate on eligible courses"]}
+};
+
+// Logo source: the provider's website icon. Add a new provider here: "Provider name":"theirwebsite.com"
+const DOMAINS={
+ "freeCodeCamp":"freecodecamp.org","Harvard (CS50)":"harvard.edu","Coursera":"coursera.org","Udemy":"udemy.com",
+ "Kaggle Learn":"kaggle.com","Great Learning Academy":"mygreatlearning.com","NPTEL":"nptel.ac.in","edX":"edx.org",
+ "Cisco Networking Academy":"netacad.com","Python Institute":"pythoninstitute.org","Infosys Springboard":"infosys.com"
+};
+// Optional: your own sharper logo files. Put images in a "logos" folder next to index.html, then add e.g. "Coursera":"logos/coursera.png"
+const LOGOS={};
+function logo(p){
+  const d=DOMAINS[p],f=LOGOS[p],ch=esc(p.charAt(0));
+  if(!d&&!f)return `<div class="logo ph">${ch}</div>`;
+  return `<img class="logo" src="${f||"https://www.google.com/s2/favicons?domain="+d+"&sz=128"}" alt="${ch}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'logo ph',textContent:this.alt}))">`;
+}
+
+const $=id=>document.getElementById(id);
+let favs=[];
+try{favs=JSON.parse(localStorage.getItem("certfind-favs")||"[]")}catch(e){}
+const state={q:"",subject:"",level:"",price:"",favOnly:false};
+
+const subjects=[...new Set(COURSES.map(c=>c.s))].sort();
+$("subject").innerHTML='<option value="">All subjects</option>'+subjects.map(s=>`<option>${s}</option>`).join("");
+
+function esc(s){return s.replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+function saveFavs(){try{localStorage.setItem("certfind-favs",JSON.stringify(favs))}catch(e){}}
+
+function render(){
+  const q=state.q.toLowerCase();
+  const list=COURSES.filter(c=>
+    (!q||(c.t+" "+c.p+" "+c.s).toLowerCase().includes(q))&&
+    (!state.subject||c.s===state.subject)&&
+    (!state.level||c.l===state.level)&&
+    (!state.price||c.price===state.price)&&
+    (!state.favOnly||favs.includes(c.url+c.t)));
+  $("count").textContent=list.length+(list.length===1?" course":" courses");
+  $("grid").innerHTML=list.length?list.map(c=>{
+    const id=c.url+c.t,f=favs.includes(id);
+    return `<article class="card">
+      <div class="head">${logo(c.p)}<div><h2>${esc(c.t)}</h2><p class="prov">${esc(c.p)}</p></div></div>
+      <div class="tags"><span class="tag ${c.price.toLowerCase()}">${c.price}</span><span class="tag">${c.s}</span><span class="tag">${c.l}</span>${c.verified?'<span class="tag free">✓ Verified</span>':""}</div>
+      <p class="note"><b>Certificate:</b> ${esc(c.cert)}</p>
+      <div class="actions"><button class="btn" data-open="${COURSES.indexOf(c)}">View course</button>
+      <button class="fav" data-id="${esc(id)}" aria-pressed="${f}" aria-label="${f?"Remove from":"Save to"} favourites">${f?"♥":"♡"}</button></div>
+    </article>`}).join(""):'<p class="empty">No courses match. Try clearing a filter.</p>';
+}
+
+$("q").addEventListener("input",e=>{state.q=e.target.value;render()});
+$("subject").addEventListener("change",e=>{state.subject=e.target.value;render()});
+$("level").addEventListener("change",e=>{state.level=e.target.value;render()});
+document.querySelectorAll("[data-price]").forEach(b=>b.addEventListener("click",()=>{
+  state.price=b.dataset.price;
+  document.querySelectorAll("[data-price]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  render();
+}));
+$("favOnly").addEventListener("click",e=>{
+  state.favOnly=!state.favOnly;e.currentTarget.setAttribute("aria-pressed",state.favOnly);render();
+});
+function openModal(i){
+  const c=COURSES[i],d=DETAILS[c.t]||{};
+  $("modalBody").innerHTML=`<div class="head">${logo(c.p)}<div><h3>${esc(c.t)}</h3><p class="prov">${esc(c.p)}</p></div></div>
+    <dl class="facts">
+      <div><dt>Price</dt><dd>${c.price}</dd></div>
+      <div><dt>Level</dt><dd>${c.l}</dd></div>
+      <div><dt>Time needed</dt><dd>${esc(d.time||"Check the provider's page")}</dd></div>
+      <div><dt>Before you start</dt><dd>${esc(d.need||"Check the provider's page")}</dd></div>
+      <div><dt>Subject</dt><dd>${c.s}</dd></div>
+      <div><dt>Last checked</dt><dd>${esc(c.checked||"Not checked yet")}</dd></div>
+    </dl>
+    <section><h4>What you will learn</h4><ul>${(d.learn||["See the provider's page for the syllabus"]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></section>
+    <section><h4>Certificate</h4><p style="margin:0">${esc(c.cert)}</p></section>
+    ${c.verified?"":'<p class="warn">Prices, time and certificate rules can change. Please confirm on the official page before you enrol.</p>'}
+    <a class="btn" href="${c.url}" target="_blank" rel="noopener noreferrer">Go to the official course page</a>`;
+  $("modal").showModal();
+}
+$("modal").addEventListener("click",e=>{if(e.target===$("modal"))$("modal").close()});
+$("closeBtn").addEventListener("click",()=>$("modal").close());
+$("grid").addEventListener("click",e=>{
+  const o=e.target.closest("[data-open]");
+  if(o){openModal(+o.dataset.open);return}
+  const b=e.target.closest(".fav");if(!b)return;
+  const id=b.dataset.id;
+  favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];
+  saveFavs();render();
+});
+// Background: floating certificates, badges and particles (change counts N and P to show more or fewer)
+(function(){
+  const bg=$("bg");if(!bg)return;
+  const small=window.matchMedia("(max-width:700px)").matches;
+  const N=small?10:18,P=small?14:30;
+  const r=(a,b)=>a+Math.random()*(b-a);
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const kinds=[["cert","0 0 100 72","sway"],["cert","0 0 100 72","sway"],["cert","0 0 100 72","sway"],["cap","0 0 100 100","spin"],["rib","0 0 100 100","sway"],["star","0 0 100 100","spin"],["ok","0 0 100 100","sway"],["star","0 0 100 100","spin"]];
+  const cols=["c-blue","c-cyan","c-blue","c-cyan","c-gold","c-white"];
+  const depths=[
+    {c:"far",size:[28,46],op:[.2,.3],dur:[80,110]},
+    {c:"mid",size:[56,86],op:[.28,.4],dur:[55,75]},
+    {c:"near",size:small?[80,110]:[110,170],op:[.34,.44],dur:[40,52]}
+  ];
+  let h="";
+  for(let i=0;i<N;i++){
+    const d=depths[i%3],k=pick(kinds),dur=r(...d.dur);
+    h+=`<div class="it ${pick(cols)} ${d.c}" style="--x:${r(0,92).toFixed(1)}%;--size:${r(...d.size).toFixed(0)}px;--op:${r(...d.op).toFixed(2)};--dur:${dur.toFixed(0)}s;--delay:-${r(0,dur).toFixed(0)}s;--dx:${r(-6,6).toFixed(1)}vw;--ty:${r(5,85).toFixed(0)}vh"><svg class="${k[2]}" viewBox="${k[1]}" style="--td:${r(14,26).toFixed(0)}s;--tx:${r(-14,14).toFixed(0)}deg"><use href="#${k[0]}"/></svg></div>`;
+  }
+  for(let i=0;i<P;i++){
+    const dur=r(30,60);
+    h+=`<b class="pt ${pick(cols)}" style="--x:${r(0,100).toFixed(1)}%;--s:${r(2,4).toFixed(1)}px;--op:${r(.25,.6).toFixed(2)};--dur:${dur.toFixed(0)}s;--delay:-${r(0,dur).toFixed(0)}s;--dx:${r(-4,4).toFixed(1)}vw;--ty:${r(0,95).toFixed(0)}vh"></b>`;
+  }
+  bg.insertAdjacentHTML("beforeend",h);
+})();
+
+// 3D tilt on cards (mouse devices only)
+if(window.matchMedia("(hover:hover)").matches){
+  $("grid").addEventListener("pointermove",e=>{
+    const c=e.target.closest(".card");if(!c)return;
+    const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.setProperty("--ry",(x*10)+"deg");c.style.setProperty("--rx",(-y*10)+"deg");
+  });
+  $("grid").addEventListener("pointerout",e=>{
+    const c=e.target.closest(".card");
+    if(c){c.style.setProperty("--rx","0deg");c.style.setProperty("--ry","0deg")}
+  });
+}
+render();
+</script>
+</body>
+</html>
